@@ -7,6 +7,15 @@ jobs:
       - setup_remote_docker
       - checkout
       - docker/install-docker
+      - run:
+          name: Build container
+          command: 'docker build -t registry.heroku.com/${HEROKU_APP_NAME}/web .'
+      - run:
+          name: Heroku login
+          command: 'docker login --username=_ --password=${HEROKU_API_KEY} registry.heroku.com'
+      - run:
+          name: Heroku push
+          command: 'docker push registry.heroku.com/${HEROKU_APP_NAME}/web'
 workflows:
   heroku_deploy:
     jobs:
