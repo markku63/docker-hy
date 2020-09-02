@@ -3,6 +3,7 @@ orbs:
   docker: circleci/docker@1.0.0
 jobs:
   deploy:
+    executor: docker/docker
     steps:
       - setup_remote_docker
       - checkout
