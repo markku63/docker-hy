@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   heroku: circleci/heroku@1.2.2
-  docker: circleci/docker@1.0.0
+  docker: circleci/docker@1.4.0
 jobs:
   deploy:
     executor: heroku/default
@@ -14,14 +14,15 @@ jobs:
       - run:
           name: Heroku login
           command: 'heroku container:login'
-      - docker/build:
-          registry: registry.heroku.com
-          image: ${HEROKU_APP_NAME}/web
-      - docker/push:
-          registry: registry.heroku.com
-          image: ${HEROKU_APP_NAME}/web
-      - heroku/release-docker-image:
-          process-types: web
+      - run:
+          name: Docker build
+          command: 'docker build -t registry.heroku.com/${HEROKU_APP_NAME}/web .'
+      - run:
+          name: Push to Heroku
+          command: 'docker push registry.heroku.com/${HEROKU_APP_NAME}/web'
+      - run:
+          name: Heroku release
+          command: 'heroku container:release --app=${HEROKU_APP_NAME} web'
 
 workflows:
   heroku_deploy:
