@@ -1,22 +1,28 @@
 version: 2.1
 orbs:
+  heroku: circleci/heroku@1.2.2
   docker: circleci/docker@1.0.0
 jobs:
   deploy:
-    executor: docker/docker
+    executor: heroku/default
     steps:
       - setup_remote_docker
       - checkout
       - docker/install-docker
-      - run:
-          name: Build container
-          command: 'docker build -t registry.heroku.com/${HEROKU_APP_NAME}/web .'
+      - heroku/install
+      - heroku/check-authentication
       - run:
           name: Heroku login
-          command: 'docker login --username=_ --password=${HEROKU_API_KEY} registry.heroku.com'
-      - run:
-          name: Heroku push
-          command: 'docker push registry.heroku.com/${HEROKU_APP_NAME}/web'
+          command: 'heroku container:login'
+      - docker/build:
+          registry: registry.heroku.com
+          image: ${HEROKU_APP_NAME}/web
+      - docker/push:
+          registry: registry.heroku.com
+          image: ${HEROKU_APP_NAME}/web
+      - heroku/release-docker-image:
+          process-types: web
+
 workflows:
   heroku_deploy:
     jobs:
